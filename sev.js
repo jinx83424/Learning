@@ -1,5 +1,22 @@
-function saveToLocal(event) {
+function generateUniqueKey() {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+  }
+  
+  function deleteUser(userKey) {
+    if (typeof (Storage) !== 'undefined') {
+      const users = JSON.parse(localStorage.getItem('users')) || {};
+  
+      delete users[userKey];
+  
+      localStorage.setItem('users', JSON.stringify(users));
+  
+      displayUserDetails();
+    }
+  }
+  
+  function saveToLocal(event) {
     event.preventDefault(); 
+  
     const name = document.getElementById('name').value;
     const email = document.getElementById('email').value;
     const phone = document.getElementById('phone').value;
@@ -12,10 +29,12 @@ function saveToLocal(event) {
       time: time
     };
   
-    if (typeof (Storage) !== 'undefined') {
-      let users = JSON.parse(localStorage.getItem('users')) || [];
+    const userKey = generateUniqueKey();
   
-      users.push(userDetails);
+    if (typeof (Storage) !== 'undefined') {
+      let users = JSON.parse(localStorage.getItem('users')) || {};
+  
+      users[userKey] = userDetails;
   
       localStorage.setItem('users', JSON.stringify(users));
   
@@ -25,17 +44,19 @@ function saveToLocal(event) {
       document.getElementById('time').value = '';
   
       displayUserDetails();
-    } 
+    }
   }
   
   function displayUserDetails() {
     const userDetailsContainer = document.getElementById('userDetails');
   
-    const users = JSON.parse(localStorage.getItem('users')) || [];
+    const users = JSON.parse(localStorage.getItem('users')) || {};
   
     userDetailsContainer.innerHTML = '';
   
-    users.forEach(user => {
+    Object.keys(users).forEach(userKey => {
+      const user = users[userKey];
+  
       const card = document.createElement('div');
       card.classList.add('card', 'mb-3');
   
@@ -58,10 +79,18 @@ function saveToLocal(event) {
       userTime.classList.add('card-text');
       userTime.textContent = user.time;
   
+      const deleteButton = document.createElement('button');
+      deleteButton.classList.add('btn', 'btn-danger', 'mt-2');
+      deleteButton.textContent = 'Delete';
+      deleteButton.addEventListener('click', function () {
+        deleteUser(userKey);
+      });
+  
       cardBody.appendChild(userName);
       cardBody.appendChild(userEmail);
       cardBody.appendChild(userPhone);
       cardBody.appendChild(userTime);
+      cardBody.appendChild(deleteButton);
   
       card.appendChild(cardBody);
   
